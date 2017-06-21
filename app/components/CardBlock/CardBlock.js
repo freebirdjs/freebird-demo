@@ -8,6 +8,10 @@ import {getDevs, write} from '../../redux/modules/cardBlock';
 import {Light, Buzzer, Flame, Pir, Switch, Temperature, 
         Humidity, Illuminance , Weather} from '../Card/Card';
 
+import {DeviceList} from '../DeviceList/DeviceList';
+import {GadgetList} from '../GadgetList/GadgetList';
+
+
 var ReactGridLayout = WidthProvider(GridLayout);
 
 var keyCounter,
@@ -175,10 +179,18 @@ var CardBlock = React.createClass({
         );
 
         return (
-            <div style={{margin:'1% 0%'}}>
-                <ReactGridLayout cols={9} rowHeight={rowHeight} isDraggable={false}>
-                    {allGadRender}
-                </ReactGridLayout>
+            <div>
+                <div style={{margin:'1% 0%'}}>
+                    <ReactGridLayout cols={9} rowHeight={rowHeight} isDraggable={false}>
+                        {allGadRender}
+                    </ReactGridLayout>
+                </div>
+                <div>
+                    <DeviceList devs={[]}/> // [ devInfo1, devInfo2, ... ]
+                </div>
+                <div>
+                    <GadgetList gads={[]}/> // [ devInfo1, devInfo2, ... ]
+                </div>
             </div>
         );
     }
