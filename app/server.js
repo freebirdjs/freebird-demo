@@ -1,12 +1,39 @@
-var http = require('http'); 
-var chalk = require('chalk');
+var chalk = require('chalk'),
+    nodemailer = require('nodemailer'),
+    Discovery = require('udp-discovery').Discovery;
 
-var ioServer = require('./helpers/ioServer');
-var server = http.createServer();
+var Freebird = require('freebird'),
+    bleCore = require('freebird-netcore-ble')('noble'),
+    mqttCore = require('freebird-netcore-mqtt')(),
+    coapCore = require('freebird-netcore-coap')()/*,
+    zigbeeCore = require('freebird-netcore-zigbee')('dev/ttyACM0')*/;
 
-server.listen(3030);
+var fbRpc = require('freebird-rpc'),
+    http = require('http'),
+    rpcServer = fbRpc.createServer(
+        http.createServer().listen(3000)
+    );
 
-ioServer.start(server);
+var freebird = new Freebird([ bleCore/*, mqttCore, coapCore, zigbeeCore*/ ]);
+
+var discover = new Discovery();
+
+var name = 'freebird-ip-broadcast',
+    interval = 1000,
+    available = true,
+    serv = {
+        port: 80,
+        proto: 'tcp',
+        addrFamily: 'IPv4'
+    };
+
+var transporter = nodemailer.createTransport({
+    service: 'Gmail',
+    auth: {
+        user: 'sivann.freebird@gmail.com', 
+        pass: '26583302'
+    }
+});
 
 var app = function () {
 /**********************************/
@@ -19,131 +46,46 @@ var app = function () {
 /**********************************/
     setLeaveMsg();
 
+
+    freebird.addTransport('rpcServer', rpcServer, function (err) {
+        if (err)
+            console.log(err);
+    });
+
+    // start the server
+    freebird.start(function (err) {
+        console.log('Server started');
+
+        discover.announce(name, serv, interval, available);
+
+        // Allow remote machines to join the network within 180 secs
+        freebird.permitJoin(180);
+    });
+
+    freebird.on('ready', function () {
+        // ...
+        console.log('freebird ready');
+    });
+
+    freebird.on('devIncoming', function (dev) {
+        console.log(dev);
+        // ...
+    });
+
+    freebird.on('gadIncoming', function (gad) {
+        // ...
+    });
+
+    freebird.on('devNetChanged', function (msg) {
+        console.log(msg);
+    });
+
 /**********************************/
 /* start shepherd                 */
 /**********************************/
 // start your shepherd
 
-/**********************************/
-/* register Req handler           */
-/**********************************/
-    ioServer.regReqHdlr('getDevs', function (args, cb) { 
-        // register your req handler
-        // cb(err, data);
-        // example:
-        cb(null, { 
-            'AA:BB:CC:DD:FF': {
-                permAddr: 'AA:BB:CC:DD:FF',
-                status: 'online',
-                gads: { 
-                    'illu/0': {
-                        type: 'Illuminance',
-                        auxId: 'illu/0',
-                        value: '108'
-                    },
-                    'buzzer/0': {
-                        type: 'Buzzer',
-                        auxId: 'buzzer/0',
-                        value: true
-                    },
-                    'flame/0': {
-                        type: 'Flame',
-                        auxId: 'flame/0',
-                        value: false
-                    },
-                    'pir/0': {
-                        type: 'Pir',
-                        auxId: 'pir/0',
-                        value: true
-                    }
-                }
-            }
-        });
-    });
-
-    ioServer.regReqHdlr('permitJoin', function (args, cb) { 
-        // register your req handler
-        // cb(err, data);
-        cb(null, null);
-    });
-
-    ioServer.regReqHdlr('write', function (args, cb) { 
-        // register your req handler
-        // cb(err, data);
-        cb(null, false);
-    });
-
-/************************/
-/* Event handle         */
-/************************/
-/*** ready            ***/
-// readyInd();
-
-/*** permitJoining    ***/
-// permitJoiningInd(timeLeft);
-
-/*** error            ***/
-// errorInd(msg);
-
-/*** devIncoming      ***/
-// devIncomingInd(permAddr);
-
-/*** devStatus        ***/
-// devStatusInd(permAddr, status);
-
-/*** attrsChange      ***/
-// attrsChangeInd(permAddr, data);
-
-/************************/
-/* fake Indication      */
-/************************/
-    setInterval(function () {
-        devIncomingInd({
-            permAddr: 'AA:BB:CC:DD:EE',
-            status: 'online',
-            gads: { 
-                'temp/0': {
-                    type: 'Temperature',
-                    auxId: 'temp/0',
-                    value: '19'
-                },
-                'hum/0': {
-                    type: 'Humidity',
-                    auxId: 'hum/0',
-                    value: '56'
-                },
-                'light/0': {
-                    type: 'Light',
-                    auxId: 'light/0',
-                    value: true
-                },
-                'switch/0': {
-                    type: 'Switch',
-                    auxId: 'switch/0',
-                    value: true
-                } 
-            }
-        });
-    }, 5000);
-
-    setInterval(function () {
-        attrsChangeInd('AA:BB:CC:DD:EE', {
-            type: 'Temperature',
-            auxId: 'temp/0',
-            value: '22'
-        });
-    }, 7000);
-
-    setInterval(function () {
-        toastInd('Test');
-    }, 8000);
-
-    setInterval(function () {
-        devStatusInd('AA:BB:CC:DD:EE', 'offline');
-    }, 15000);
-
 };
-
 
 /**********************************/
 /* welcome function               */
@@ -201,45 +143,47 @@ function setLeaveMsg() {
 /**********************************/
 /* Indication funciton            */
 /**********************************/
-function readyInd () {
-    ioServer.sendInd('ready', {});
-    console.log(chalk.green('[         ready ] '));
-}
+// function readyInd () {
+//     ioServer.sendInd('ready', {});
+//     console.log(chalk.green('[         ready ] '));
+// }
 
-function permitJoiningInd (timeLeft) {
-    ioServer.sendInd('permitJoining', { timeLeft: timeLeft });
-    console.log(chalk.green('[ permitJoining ] ') + timeLeft + ' sec');
-}
+// function permitJoiningInd (timeLeft) {
+//     ioServer.sendInd('permitJoining', { timeLeft: timeLeft });
+//     console.log(chalk.green('[ permitJoining ] ') + timeLeft + ' sec');
+// }
 
-function errorInd (msg) {
-    ioServer.sendInd('error', { msg: msg });
-    console.log(chalk.red('[         error ] ') + msg);
-}
+// function errorInd (msg) {
+//     ioServer.sendInd('error', { msg: msg });
+//     console.log(chalk.red('[         error ] ') + msg);
+// }
 
-function devIncomingInd (dev) {
-     ioServer.sendInd('devIncoming', { dev: dev });
-    console.log(chalk.yellow('[   devIncoming ] ') + '@' + dev.permAddr);
-}
+// function devIncomingInd (dev) {
+//      ioServer.sendInd('devIncoming', { dev: dev });
+//     console.log(chalk.yellow('[   devIncoming ] ') + '@' + dev.permAddr);
+// }
 
-function devStatusInd (permAddr, status) {
-    ioServer.sendInd('devStatus', { permAddr: permAddr, status: status });
+// function devStatusInd (permAddr, status) {
+//     ioServer.sendInd('devStatus', { permAddr: permAddr, status: status });
 
-    if (status === 'online')
-        status = chalk.green(status);
-    else 
-        status = chalk.red(status);
+//     if (status === 'online')
+//         status = chalk.green(status);
+//     else 
+//         status = chalk.red(status);
 
-    console.log(chalk.magenta('[     devStatus ] ') + '@' + permAddr + ', ' + status);
-}
+//     console.log(chalk.magenta('[     devStatus ] ') + '@' + permAddr + ', ' + status);
+// }
 
-function attrsChangeInd (permAddr, gad) {
-    ioServer.sendInd('attrsChange', { permAddr: permAddr, gad: gad });
-    console.log(chalk.blue('[   attrsChange ] ') + '@' + permAddr + ', auxId: ' + gad.auxId + ', value: ' + gad.value);
-}
+// function attrsChangeInd (permAddr, gad) {
+//     ioServer.sendInd('attrsChange', { permAddr: permAddr, gad: gad });
+//     console.log(chalk.blue('[   attrsChange ] ') + '@' + permAddr + ', auxId: ' + gad.auxId + ', value: ' + gad.value);
+// }
 
-function toastInd (msg) {
-    ioServer.sendInd('toast', { msg: msg });
+// function toastInd (msg) {
+//     ioServer.sendInd('toast', { msg: msg });
 
-}
+// }
 
-module.exports = app;
+app();
+
+//module.exports = app;

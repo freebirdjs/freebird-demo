@@ -6,8 +6,6 @@ import getMuiTheme from 'material-ui/styles/getMuiTheme';
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 import injectTapEventPlugin from 'react-tap-event-plugin';
 
-import ioClient from './helpers/ioClient';
-
 import reducer from './redux/reducer';
 import clientMiddleware from './redux/clientMiddleware';
 import {permitJoining} from './redux/modules/navBar';
@@ -18,37 +16,24 @@ import NavBar from './components/NavBar/NavBar';
 import CardBlock from './components/CardBlock/CardBlock';
 import NoticeBar from './components/NoticeBar/NoticeBar';
 
+import rpcClient from './helpers/rpcClient';
+
 /*********************************************/
 /* client app                                */
 /*********************************************/
 var store = createStore(reducer, applyMiddleware(clientMiddleware)),
     title = 'coap-shepherd';
 
-ioClient.start('http://' + window.location.hostname + ':3030');
-
-ioClient.on('permitJoining', function (msg) {
-    // msg = { timeLeft }
-    store.dispatch(permitJoining(msg.timeLeft));
+rpcClient.on('open', function () {
+    // channel established
 });
 
-ioClient.on('devIncoming', function (msg) {
-    // msg =  { dev}
-    store.dispatch(devIncoming(msg.dev));  
+rpcClient.on('close', function () {
+    // channel closed
 });
 
-ioClient.on('devStatus', function (msg) {
-    // msg = { permAddr, status }
-    store.dispatch(devStatus(msg.permAddr, msg.status));
-});
-
-ioClient.on('attrsChange', function (msg) {
-    // msg = { permAddr, gad } 
-    store.dispatch(attrsChange(msg.permAddr, msg.gad));
-});
-
-ioClient.on('toast', function (msg) {
-    // msg = { msg }
-    store.dispatch(notice(true, msg.msg));
+rpcClient.on('ind', function (msg) {
+    // indication sent from the freebird server
 });
 
 /*********************************************/
