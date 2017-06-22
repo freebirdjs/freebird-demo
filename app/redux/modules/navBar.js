@@ -1,10 +1,10 @@
 import ioClient from '../../helpers/ioClient';
 
 // Actions
-const PERMITJOIN = 'app/navBar/PERMITJOIN';
+const PERMITJOIN =    'app/navBar/PERMITJOIN';
 const PERMITJOINING = 'app/navBar/PERMITJOINING';
 
-const initialState = { timeLeft: {} };
+const initialState = { timeLeft: 0 };
 
 // Reducer
 export default function reducer(state = initialState, action) {
@@ -12,7 +12,7 @@ export default function reducer(state = initialState, action) {
         case PERMITJOIN:
             return {
                 ...state,
-                timeLeft: action.time
+                timeLeft: action.duration
             };
 
         case PERMITJOINING:
@@ -27,8 +27,8 @@ export default function reducer(state = initialState, action) {
 }
 
 // Action Creators
-export function permitJoin(time) {
-    return { type: PERMITJOIN, time: time };
+export function permitJoin(duration) {
+    return { type: PERMITJOIN, duration: duration };
 }
 
 export function permitJoining(timeLeft) {

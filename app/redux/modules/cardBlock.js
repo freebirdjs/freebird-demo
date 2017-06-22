@@ -1,12 +1,15 @@
 // Actions
 const GETDEVS = 'app/cardBlock/GETDEVS';
-const WRITE = 'app/cardBlock/WRITE';
-const DEVINCOMING = 'app/cardBlock/DEVINCOMING';
-const DEVSTATUS = 'app/cardBlock/DEVSTATUS';
-const ATTRSCHANGE = 'app/cardBlock/ATTRSCHANGE';
+const GETGADS = 'app/cardBlock/GETGADS';
+const WRITE   = 'app/cardBlock/WRITE';
+const DEVINCOMING   = 'app/cardBlock/DEVINCOMING';
+const STATUSCHANGED = 'app/cardBlock/STATUSCHANGED';
+const DEVINCOMING   = 'app/cardBlock/GADINCOMING';
+const ATTRSCHANGE   = 'app/cardBlock/ATTRSCHANGE';
 
 const initialState = {
-        devs: { } 
+        devs: { },
+        gads: { }
     };
 
 // Reducer
@@ -18,22 +21,25 @@ export default function reducer(state = initialState, action) {
                 devs: action.devs
             };
 
+        case GETGADS:
+            return {
+                ...state,
+                gads: action.gads
+            };
+
         case WRITE:
-            if (!state.devs || !state.devs[action.permAddr] || !state.devs[action.permAddr].gads || !state.devs[action.permAddr].gads[action.auxId]) 
+            if (!state.gads || !state.gads[action.id])
                 return state;
             else 
                 return {
                     ...state,
-                    devs: {
-                        ...state.devs,
-                        [action.permAddr]: {
-                            ...state.devs[action.permAddr],
-                            gads: {
-                                ...state.devs[action.permAddr].gads,
-                                [action.auxId]: {
-                                    ...state.devs[action.permAddr].gads[action.auxId],
-                                    value: action.value
-                                }
+                    gads: {
+                        ...state.gads,
+                        [action.id]: {
+                            ...state.gads[action.id],
+                            attrs: {
+                                ...state.gads[action.id].attrs,
+                                [action.attrName]: action.value
                             }
                         }
                     }
@@ -44,39 +50,48 @@ export default function reducer(state = initialState, action) {
                 ...state,
                 devs: {
                     ...state.devs,
-                    [action.dev.permAddr]: action.dev
+                    [action.id]: action.dev
                 }
             };
 
-        case DEVSTATUS:
-            if (!state.devs || !state.devs[action.permAddr]) 
+        case STATUSCHANGED:
+            if (!state.devs || !state.devs[action.id]) 
                 return state;
             else 
                 return {
                     ...state,
                     devs: {
                         ...state.devs,
-                        [action.permAddr]: {
-                            ...state.devs[action.permAddr],
-                            status: action.status
+                        [action.id]: {
+                            ...state.devs[action.id],
+                            net: {
+                                ...state.devs[action.id].net,
+                                status: action.status
+                            }
                         }
                     }
                 };
 
+        case GADINCOMING:
+            return {
+                ...state,
+                gads: {
+                    ...state.gads,
+                    [action.id]: action.gad
+                }
+            };
+
         case ATTRSCHANGE:
-            if (!state.devs ||!state.devs[action.permAddr] || !state.devs[action.permAddr].gads || !state.devs[action.permAddr].gads[action.gad.auxId]) 
+            if (!state.gads || !state.gads[action.id]) 
                 return state;
             else 
                 return {
                     ...state,
-                    devs: {
-                        ...state.devs,
-                        [action.permAddr]: {
-                            ...state.devs[action.permAddr],
-                            gads: {
-                                ...state.devs[action.permAddr].gads,
-                                [action.gad.auxId]: action.gad
-                            }
+                    gads: {
+                        ...state.gads,
+                        [action.id]: {
+                            ...state.gads[action.id],
+                            attrs: Object.assign({}, state.gads[action.id].attrs, action.value)
                         }
                     }
                 };
@@ -87,23 +102,33 @@ export default function reducer(state = initialState, action) {
 }
 
 // Action Creators
+// Request
 export function getDevs() {
     return { type: GETDEVS };
 }
 
-export function write(permAddr, auxId, value) {
-    return { type: WRITE, permAddr: permAddr, auxId: auxId, value: value };
+export function getGads() {
+    return { type: GETDEVS };
 }
 
-export function devIncoming(dev) {
-    return { type: DEVINCOMING, dev: dev };
+export function write(id, attrName, value) {
+    return { type: WRITE, id: id, attrName: attrName, value: value };
 }
 
-export function devStatus(permAddr, status) {
-    return { type: DEVSTATUS, permAddr: permAddr, status: status };
+// Indication
+export function devIncoming(id, dev) {
+    return { type: DEVINCOMING, id: id, dev: dev };
 }
 
-export function attrsChange(permAddr, gad) {
-    return { type: ATTRSCHANGE, permAddr: permAddr, gad: gad };
+export function statusChanged(id, status) {
+    return { type: STATUSCHANGED, id: id, status: status };
+}
+
+export function gadIncoming(id, gad) {
+    return { type: GADINCOMING, id: id, gad: gad };
+}
+
+export function attrsChange(id, value) {
+    return { type: ATTRSCHANGE, id: id, value: value };
 }
 

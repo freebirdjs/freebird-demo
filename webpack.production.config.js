@@ -30,7 +30,6 @@ module.exports = {
     },
 
     plugins: [
-        new webpack.optimize.OccurenceOrderPlugin(),
         new HtmlWebpackPlugin({
             template: 'app/index.tpl.html',
             inject: 'body',
@@ -59,24 +58,26 @@ module.exports = {
     ],
 
     module: {
-        loaders: [{
-            test: /\.jsx?$/,
-            exclude: /node_modules/,
-            loader: 'babel',
-            query: {
-                "presets": ["es2015", "stage-0", "react"]
+        rules: [
+            {
+                test: /\.(js|jsx)$/,
+                enforce: 'pre',
+                loader: 'babel-loader',
+                options: {
+                    presets: [ 'react', 'es2017', 'stage-0' ]
+                },
+            }, {
+                test: /\.css$/,
+                use: [ 'style-loader', 'css-loader' ],
+                include: PATHS.style
+            }, {
+                test: /\.json?$/,
+                loader: 'json-loader'
+            }, {
+                test: /\.(png|jpg|jpeg|gif|svg|woff|woff2)$/,
+                loader: 'url-loader?limit=10000'
             }
-        }, {
-            test: /\.json?$/,
-            loader: 'json-loader'
-        }, {
-            test: /\.(png|jpg|jpeg|gif|svg|woff|woff2)$/,
-            loader: 'url-loader?limit=10000'
-        }, {
-            test: /\.css$/,
-            loader: ExtractTextPlugin.extract('style', 'css?modules&localIdentName=[name]__[local]-[hash:base64:5]'),
-            include: PATHS.style
-        }]
+        ]
     },
 
     node: {

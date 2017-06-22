@@ -1,9 +1,11 @@
+import _ from 'busyman';
 import request from 'superagent';
 
-import ioClient from '../helpers/ioClient';
+import rpcClient from '../helpers/rpcClient';
 
 const GETDEVS = 'app/cardBlock/GETDEVS';
-const WRITE = 'app/cardBlock/WRITE';
+const GETGADS = 'app/cardBlock/GETGADS';
+const WRITE   = 'app/cardBlock/WRITE';
 const PERMITJOIN = 'app/navBar/PERMITJOIN';
 const GETWEATHER = 'app/weather/GETWEATHER';
 
@@ -11,8 +13,8 @@ const clientMiddleware = store => next => action => {
     switch (action.type) {
 // navBar
         case PERMITJOIN:
-            ioConnectedDelay(function () {
-                ioClient.sendReq('permitJoin', { time: action.time }, function (err, data) {
+            rpcConnectedDelay(function () {
+                rpcClient.send('net', 'permitJoin', { duration: action.duration }, function (err, data) {
                     if (err) {
                         console.log(err);
                     } else {
@@ -24,25 +26,64 @@ const clientMiddleware = store => next => action => {
 
 // cardBlork
         case GETDEVS:
-            ioConnectedDelay(function () {
-                ioClient.sendReq('getDevs', {}, function (err, data) {
+            rpcConnectedDelay(function () {
+                rpcClient.send('net', 'getAllDevIds', {}, function (err, data) {
                     if (err) {
                         console.log(err);
                     } else {
-                        action.devs = data;
-                        next(action);    
+                        rpcClient.send('net', 'getDevs', { ids: data.ids }, function (err, data) {  // { devs: [ {}, {}, {}... ]}
+                            var devs = {};
+
+                            _.forEach(data, function (dev) {
+                                devs[dev.id] = dev;
+                            });
+
+                            if (err) {
+                                console.log(err);
+                            } else {
+                                action.devs = devs;
+                                next(action);    
+                            } 
+                        });   
+                    } 
+                });
+            });
+            break;
+
+        case GETDEVS:
+            rpcConnectedDelay(function () {
+                rpcClient.send('net', 'getAllGadIds', {}, function (err, data) {
+                    if (err) {
+                        console.log(err);
+                    } else {
+                        rpcClient.send('net', 'getGads', { ids: data.ids }, function (err, data) {  // { gads: [ {}, {}, {}... ]}
+                            var gads = {};
+
+                            _.forEach(data, function (gad) {
+                                gads[gad.id] = gad;
+                            });
+
+                            if (err) {
+                                console.log(err);
+                            } else {
+                                action.gads = gads;
+                                next(action);    
+                            } 
+                        }); 
                     } 
                 });
             });
             break;
 
         case WRITE:
-            ioClient.sendReq('write', { permAddr: action.permAddr, auxId: action.auxId, value: action.value }, function (err, data) {
-                if (err) {
-                    console.log(err);
-                } else {
-                    next(action);    
-                } 
+            rpcConnectedDelay(function () {
+                rpcClient.send('gad', 'write', { id: action.id, attrName: action.attrName, value: action.value }, function (err, data) {
+                    if (err) {
+                        console.log(err);
+                    } else {
+                        next(action);    
+                    } 
+                });
             });
             break;
 
@@ -83,12 +124,12 @@ const clientMiddleware = store => next => action => {
     }
 };
 
-function ioConnectedDelay (callback) {
-    if (ioClient._connected) {
+function rpcConnectedDelay (callback) {
+    if (rpcClient._connected) {
         callback();
     } else {
         setTimeout(function () {
-            ioConnectedDelay(callback);
+            rpcConnectedDelay(callback);
         }, 1000);
     }
 }

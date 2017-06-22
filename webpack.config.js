@@ -36,9 +36,7 @@ module.exports = {
             inject: 'body',
             filename: 'index.html'
         }),
-        new webpack.optimize.OccurenceOrderPlugin(),
         new webpack.HotModuleReplacementPlugin(),
-        new webpack.NoErrorsPlugin(),
         new webpack.DefinePlugin({
             'global.GENTLY': false
         }),
@@ -47,25 +45,28 @@ module.exports = {
         })
     ],
 
-    module: {
-        loaders: [{
-            test: /\.jsx?$/,
-            exclude: /node_modules/,
-            loader: 'babel',
-            query: {
-                "presets": ["react", "es2015", "stage-0", "react-hmre"]
+    module: {        
+        rules: [
+            {
+                test: /\.(js|jsx)$/,
+                enforce: 'pre',
+                loader: 'babel-loader',
+                options: {
+                    presets: [ 'react', 'es2017', 'stage-0', "react-hmre" ]
+                },
+            }, {
+                test: /\.css$/,
+                // use: [ 'style-loader', 'css-loader' ],
+                loader: 'style!css?modules',
+                include: PATHS.style
+            }, {
+                test: /\.json?$/,
+                loader: 'json-loader'
+            }, {
+                test: /\.(png|jpg|jpeg|gif|svg|woff|woff2)$/,
+                loader: 'url-loader?limit=10000'
             }
-        }, {
-            test: /\.json?$/,
-            loader: 'json-loader'
-        }, {
-            test: /\.css$/,
-            loader: 'style!css?modules&localIdentName=[name]__[local]-[hash:base64:5]',
-            include: PATHS.style
-        }, {
-            test: /\.(png|jpg|jpeg|gif|svg|woff|woff2)$/,
-            loader: 'url-loader?limit=10000'
-        }]
+        ]
     },
 
     node: {
