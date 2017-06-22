@@ -8,9 +8,9 @@ import injectTapEventPlugin from 'react-tap-event-plugin';
 
 import reducer from './redux/reducer';
 import clientMiddleware from './redux/clientMiddleware';
-import {permitJoining} from './redux/modules/navBar';
-import {devIncoming, devStatus, attrsChange} from './redux/modules/cardBlock';
-import {notice, requestClose} from './redux/modules/noticeBar';
+import { permitJoining } from './redux/modules/navBar';
+import { devIncoming, statusChanged, gadIncoming, attrsChange } from './redux/modules/cardBlock';
+import { notice, requestClose } from './redux/modules/noticeBar';
 
 import NavBar from './components/NavBar/NavBar';
 import CardBlock from './components/CardBlock/CardBlock';
@@ -22,7 +22,7 @@ import rpcClient from './helpers/rpcClient';
 /* client app                                */
 /*********************************************/
 var store = createStore(reducer, applyMiddleware(clientMiddleware)),
-    title = 'coap-shepherd';
+    title = 'freebird-demo';
 
 rpcClient.on('open', function () {
     // channel established
@@ -33,7 +33,32 @@ rpcClient.on('close', function () {
 });
 
 rpcClient.on('ind', function (msg) {
-    // indication sent from the freebird server
+    var cmd = msg.subsys + ':' + msg.type;
+
+    switch (cmd) {
+        case 'net:permitJoining':
+            store.dispatch(permitJoining(msg.data.timeLeft));
+            break;
+
+        case 'dev:devIncoming':
+            store.dispatch(devIncoming(msg.id, msg.data));
+            break;
+
+        case 'dev:statusChanged':
+            store.dispatch(statusChanged(msg.id, msg.data.status));
+            break;
+
+        case 'gad:gadIncoming':
+            store.dispatch(gadIncoming(msg.id, msg.data));
+            break;
+
+        case 'gad:attrsChanged':
+            store.dispatch(attrsChange(msg.id, msg.data));
+            break;
+
+        default:
+            return;
+    }
 });
 
 /*********************************************/

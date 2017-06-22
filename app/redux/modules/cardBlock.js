@@ -108,7 +108,7 @@ export function getDevs() {
 }
 
 export function getGads() {
-    return { type: GETDEVS };
+    return { type: GETGADS };
 }
 
 export function write(id, attrName, value) {

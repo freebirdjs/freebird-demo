@@ -1,15 +1,15 @@
-import React, {PropTypes} from 'react';
-import {connect} from 'react-redux';
+import React, { PropTypes } from 'react';
+import { connect } from 'react-redux';
 import GridLayout from 'react-grid-layout';
-import {WidthProvider} from 'react-grid-layout';
+import { WidthProvider } from 'react-grid-layout';
 
-import {getDevs, write} from '../../redux/modules/cardBlock';
+import { getDevs, getGads, write } from '../../redux/modules/cardBlock';
 
 import {Light, Buzzer, Flame, Pir, Switch, Temperature, 
         Humidity, Illuminance , Weather} from '../Card/Card';
 
-import {DeviceList} from '../DeviceList/DeviceList';
-import {GadgetList} from '../GadgetList/GadgetList';
+import { DeviceList } from '../DeviceList/DeviceList';
+import { GadgetList } from '../GadgetList/GadgetList';
 
 
 var ReactGridLayout = WidthProvider(GridLayout);
@@ -19,11 +19,13 @@ var keyCounter,
 
 var CardBlock = React.createClass({
     propTypes: {
-        getDevs: PropTypes.func.isRequired
+        getDevs: PropTypes.func.isRequired,
+        getGads: PropTypes.func.isRequired
     },
     
     componentDidMount: function () {
         this.props.getDevs();
+        this.props.getGads();
     },
 
     getKeyAndDataGrid: function (type) {
@@ -204,5 +206,5 @@ function mapStateToProps (state) {
 
 export default connect(
     mapStateToProps, 
-    {getDevs, write}
+    {getDevs, getGads, write}
 )(CardBlock)
