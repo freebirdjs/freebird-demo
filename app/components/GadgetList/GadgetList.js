@@ -1,4 +1,5 @@
-import React, {Component} from 'react';
+import React from 'react';
+import PropTypes from 'prop-types';
 import {
   Table,
   TableBody,
@@ -8,35 +9,26 @@ import {
   TableRowColumn,
 } from 'material-ui/Table';
 
-export default class GadgetList extends Component {
-  constructor(props) {
-    super(props);
-  }
+const GadgetList = ({ gads, height }) => {
+    let listItems = Object.keys(gads).map(function (id) {
+        let gadInfo = gads(id),
+            subnetName = _.split(gadInfo.netcore, '-');
 
-  render() {
-    var gads = this.props.gads;
-    var listItems = gads.map((function (gadInfo) {
-
-        var subnetName = _.split(gadInfo.netcore, '-'),
         subnetName = subnetName[subnetName.length - 1];
-
-
         return (
           <TableRow key={gadInfo.id} selected={false}>
             <TableRowColumn>{gadInfo.id}</TableRowColumn>
             <TableRowColumn>{subnetName}</TableRowColumn>
             <TableRowColumn>{gadInfo.dev.permAddr}</TableRowColumn>
             <TableRowColumn>{gadInfo.panel.classId}</TableRowColumn>
-            <TableRowColumn>{gadInfo.auxId}</TableRowColumn>
-            <TableRowColumn>{gadInfo.attrs.sensorValue || gadInfo.attrs.onOff || ''}</TableRowColumn>
+            <TableRowColumn>{gadInfo.attrs.sensorValue || gadInfo.attrs.dInState || gadInfo.attrs.onOff || ''}</TableRowColumn>
           </TableRow>
         );
     });
 
     return (
       <Table
-        onRowSelection={this.handleRowSelection}
-        height={this.props.height}
+        height={height}
         fixedHeader={true}
         fixedFooter={false}
         selectable={false}
@@ -49,7 +41,7 @@ export default class GadgetList extends Component {
             enableSelectAll={false}
         >
           <TableRow>
-            <TableHeaderColumn colSpan="3" tooltip="Gadgets Managed By Freebird" style={{textAlign: 'center'}}>
+            <TableHeaderColumn colSpan="5" tooltip="Gadgets Managed By Freebird" style={{textAlign: 'center'}}>
               Gadget List
             </TableHeaderColumn>
           </TableRow>
@@ -58,7 +50,6 @@ export default class GadgetList extends Component {
             <TableHeaderColumn>Subnet</TableHeaderColumn>
             <TableHeaderColumn>Permanent Addr</TableHeaderColumn>
             <TableHeaderColumn>Gadget Type</TableHeaderColumn>
-            <TableHeaderColumn>Auxiliary Id</TableHeaderColumn>
             <TableHeaderColumn>Value</TableHeaderColumn>
           </TableRow>
         </TableHeader>
@@ -68,6 +59,11 @@ export default class GadgetList extends Component {
         </TableBody>
       </Table>
     );
-  }
+}
 
+GadgetList.propTypes = {
+    gads: PropTypes.object.isRequired,
+    height: PropTypes.number,
+};
 
+export default GadgetList

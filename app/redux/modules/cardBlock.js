@@ -4,7 +4,7 @@ const GETGADS = 'app/cardBlock/GETGADS';
 const WRITE   = 'app/cardBlock/WRITE';
 const DEVINCOMING   = 'app/cardBlock/DEVINCOMING';
 const STATUSCHANGED = 'app/cardBlock/STATUSCHANGED';
-const DEVINCOMING   = 'app/cardBlock/GADINCOMING';
+const GADINCOMING   = 'app/cardBlock/GADINCOMING';
 const ATTRSCHANGE   = 'app/cardBlock/ATTRSCHANGE';
 
 const initialState = {

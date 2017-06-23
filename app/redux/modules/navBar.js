@@ -1,5 +1,3 @@
-import ioClient from '../../helpers/ioClient';
-
 // Actions
 const PERMITJOIN =    'app/navBar/PERMITJOIN';
 const PERMITJOINING = 'app/navBar/PERMITJOINING';

@@ -1,4 +1,5 @@
-import React, {Component} from 'react';
+import React from 'react';
+import PropTypes from 'prop-types';
 import {
   Table,
   TableBody,
@@ -8,19 +9,12 @@ import {
   TableRowColumn,
 } from 'material-ui/Table';
 
-export default class DeviceList extends Component {
-  constructor(props) {
-    super(props);
-  }
+const DeviceList = ({ devs, height }) => {
+    let listItems = Object.keys(devs).map(function (id) {
+        let devInfo = devs(id),
+            subnetName = _.split(devInfo.netcore, '-');
 
-  render() {
-    var devs = this.props.devs;
-    var listItems = devs.map((function (devInfo) {
-
-        var subnetName = _.split(devInfo.netcore, '-'),
         subnetName = subnetName[subnetName.length - 1];
-
-
         return (
           <TableRow key={devInfo.id} selected={false}>
             <TableRowColumn>{devInfo.id}</TableRowColumn>
@@ -30,15 +24,14 @@ export default class DeviceList extends Component {
             <TableRowColumn>{devInfo.net.status}</TableRowColumn>
             <TableRowColumn>{new Date(devInfo.net.timestamp)}</TableRowColumn>
             <TableRowColumn>{new Date(devInfo.net.joinTime)}</TableRowColumn>
-            <TableRowColumn>{new Date(devInfo.attrs.manufacturer)}</TableRowColumn>
+            <TableRowColumn>{devInfo.attrs.manufacturer}</TableRowColumn>
           </TableRow>
         );
     });
 
     return (
       <Table
-        onRowSelection={this.handleRowSelection}
-        height={this.props.height}
+        height={height}
         fixedHeader={true}
         fixedFooter={false}
         selectable={false}
@@ -51,7 +44,7 @@ export default class DeviceList extends Component {
             enableSelectAll={false}
         >
           <TableRow>
-            <TableHeaderColumn colSpan="3" tooltip="Devices Managed By Freebird" style={{textAlign: 'center'}}>
+            <TableHeaderColumn colSpan="8" tooltip="Devices Managed By Freebird" style={{textAlign: 'center'}}>
               Device List
             </TableHeaderColumn>
           </TableRow>
@@ -72,6 +65,11 @@ export default class DeviceList extends Component {
         </TableBody>
       </Table>
     );
-  }
+}
 
+DeviceList.propTypes = {
+    devs: PropTypes.object.isRequired,
+    height: PropTypes.number,
+};
 
+export default DeviceList

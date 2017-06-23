@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import PirWatchIcon from '../Icons/PirWatchIcon'
 import PirTriggeredIcon from '../Icons/PirTriggeredIcon'
 

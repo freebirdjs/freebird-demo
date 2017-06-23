@@ -64,8 +64,12 @@ rpcClient.on('ind', function (msg) {
 /*********************************************/
 /* App component                             */
 /*********************************************/
-var App = React.createClass({
-    render: function () {
+class App extends React.Component {
+    constructor(props, context) {
+        super(props, context);
+    }
+    
+    render() {
         return (
             <MuiThemeProvider>
                 <div>
@@ -76,7 +80,7 @@ var App = React.createClass({
             </MuiThemeProvider>
         );
     }
-});
+};
 
 /*********************************************/
 /* render                                    */

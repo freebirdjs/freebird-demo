@@ -45,7 +45,7 @@ module.exports = {
         })
     ],
 
-    module: {        
+    module: { 
         rules: [
             {
                 test: /\.(js|jsx)$/,
@@ -56,8 +56,7 @@ module.exports = {
                 },
             }, {
                 test: /\.css$/,
-                // use: [ 'style-loader', 'css-loader' ],
-                loader: 'style!css?modules',
+                use: [ 'style-loader', 'css-loader' ],
                 include: PATHS.style
             }, {
                 test: /\.json?$/,
@@ -71,6 +70,7 @@ module.exports = {
 
     node: {
         __dirname: true,
-        fs: 'empty'
+        fs: 'empty',
+        tls: 'empty'
     }
 };

@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import HumidityIcon from '../../static/humid.png';
 
 var fgColor = "#FFF",

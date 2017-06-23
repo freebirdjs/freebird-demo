@@ -1,15 +1,16 @@
-import React, { PropTypes } from 'react';
+import React from 'react';
+import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import GridLayout from 'react-grid-layout';
 import { WidthProvider } from 'react-grid-layout';
 
 import { getDevs, getGads, write } from '../../redux/modules/cardBlock';
 
-import {Light, Buzzer, Flame, Pir, Switch, Temperature, 
-        Humidity, Illuminance , Weather} from '../Card/Card';
+import { Light, Buzzer, Flame, Pir, Switch, Temperature, 
+        Humidity, Illuminance , Weather } from '../Card/Card';
 
-import { DeviceList } from '../DeviceList/DeviceList';
-import { GadgetList } from '../GadgetList/GadgetList';
+import DeviceList from '../DeviceList/DeviceList';
+import GadgetList from '../GadgetList/GadgetList';
 
 
 var ReactGridLayout = WidthProvider(GridLayout);
@@ -17,18 +18,22 @@ var ReactGridLayout = WidthProvider(GridLayout);
 var keyCounter,
     layoutDataGrids;
 
-var CardBlock = React.createClass({
-    propTypes: {
+class CardBlock extends React.Component {
+    static propTypes = {
         getDevs: PropTypes.func.isRequired,
         getGads: PropTypes.func.isRequired
-    },
-    
-    componentDidMount: function () {
+    }
+
+    constructor(props, context) {
+        super(props, context);
+    }
+
+    componentDidMount() {
         this.props.getDevs();
         this.props.getGads();
-    },
+    }
 
-    getKeyAndDataGrid: function (type) {
+    getKeyAndDataGrid(type) {
         var cardProps = {
             key: null,
             dataGrid: null
@@ -66,18 +71,20 @@ var CardBlock = React.createClass({
         }
 
         return cardProps;
-    },
+    }
 
-    onClickCallback: function (permAddr, auxId, value) {
+    onClickCallback(id, attrName, value) {
         var self = this;
 
         return function () {
-            self.props.write(permAddr, auxId, !value);
+            self.props.write(id, attrName, !value);
         };
-    },
+    }
 
-    getCard: function (type, permAddr, status, auxId, value) {
+    getCard(type, status, id, attrs) {
         var card,
+            value,
+            attrName,
             enable = false,
             cardProps = this.getKeyAndDataGrid(type);
 
@@ -87,27 +94,37 @@ var CardBlock = React.createClass({
 
         switch (type) {
             case 'Light':
-                card = (<Light enable={enable} onOff={value} onClick={this.onClickCallback(permAddr, auxId, value)} />);
+                value = attrs.onOff;
+                attrName = 'onOff';
+                card = (<Light enable={enable} onOff={value} onClick={this.onClickCallback(id, attrName, value)} />);
                 break;
             case 'Buzzer':
-                card = (<Buzzer enable={enable} onOff={value} onClick={this.onClickCallback(permAddr, auxId, value)} />);
+                value = attrs.onOff;
+                attrName = 'onOff';
+                card = (<Buzzer enable={enable} onOff={value} onClick={this.onClickCallback(id, attrName, value)} />);
                 break;
             case 'Flame':
+                value = attrs.dInState;
                 card = (<Flame enable={enable} triggered={value} />);
                 break;
             case 'Pir':
+                value = attrs.dInState;
                 card = (<Pir enable={enable} triggered={value} />);
                 break;
             case 'Switch':
+                value = attrs.dInState;
                 card = (<Switch enable={enable} onOff={value} />);
                 break;
             case 'Temperature':
+                value = attrs.sensorValue;
                 card = (<Temperature enable={enable} temp={value} />);
                 break;
             case 'Humidity':
+                value = attrs.sensorValue;
                 card = (<Humidity enable={enable} humid={value} />);
                 break;
             case 'Illuminance':
+                value = attrs.sensorValue;
                 card = (<Illuminance enable={enable} lux={value} />);
                 break;
             default:
@@ -119,9 +136,9 @@ var CardBlock = React.createClass({
                 {card}
             </div>
         );
-    },
+    }
 
-    getRowHeight: function () {
+    getRowHeight() {
         var rowHeight;
 
         if (window.matchMedia("(min-width: 1800px)").matches) {
@@ -137,9 +154,9 @@ var CardBlock = React.createClass({
         }
 
         return rowHeight;
-    },
+    }
 
-    render: function () {
+    render() {
         var allGadRender = [],
             rowHeight = this.getRowHeight();
 
@@ -163,15 +180,14 @@ var CardBlock = React.createClass({
             ]
         };
 
-        for (var permAddr in this.props.devs) {
-            for (var auxId in this.props.devs[permAddr].gads) {
-                var type = this.props.devs[permAddr].gads[auxId].type,
-                    status = this.props.devs[permAddr].status,
-                    value = this.props.devs[permAddr].gads[auxId].value,
-                    card = this.getCard(type, permAddr, status, auxId, value);
+        for (var id in this.props.gads) {
+            var devId = this.props.gads[id].dev.id,
+                type = this.props.gads[id].panel.classId,
+                status = this.props.devs[devId].net.status,
+                attrs = this.props.gads[id].attrs,
+                card = this.getCard(type, status, id, attrs);
 
-                allGadRender.push(card);
-            }
+            allGadRender.push(card);
         }
 
         allGadRender.push(
@@ -179,7 +195,7 @@ var CardBlock = React.createClass({
                 <Weather />
             </div>
         );
-
+        
         return (
             <div>
                 <div style={{margin:'1% 0%'}}>
@@ -187,20 +203,23 @@ var CardBlock = React.createClass({
                         {allGadRender}
                     </ReactGridLayout>
                 </div>
+                <br />
                 <div>
-                    <DeviceList devs={[]}/> // [ devInfo1, devInfo2, ... ]
+                    <DeviceList devs={this.props.devs}/> 
                 </div>
+                <br />
                 <div>
-                    <GadgetList gads={[]}/> // [ devInfo1, devInfo2, ... ]
+                    <GadgetList gads={this.props.gads}/> 
                 </div>
             </div>
         );
     }
-});
+};
                     
 function mapStateToProps (state) {
     return { 
-        devs: state.cardBlock.devs 
+        devs: state.cardBlock.devs,
+        gads: state.cardBlock.gads 
     };
 }
 

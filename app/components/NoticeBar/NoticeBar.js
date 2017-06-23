@@ -1,20 +1,25 @@
-import React, {PropTypes} from 'react';
+import React from 'react';
+import PropTypes from 'prop-types';
 import {connect} from 'react-redux';
 import Snackbar from 'material-ui/Snackbar';
 
 import {notice, requestClose} from '../../redux/modules/noticeBar';
 
-var Notice = React.createClass({
-    propTypes: {
+class Notice extends React.Component {
+    static propTypes = {
         open: PropTypes.bool.isRequired,
         message: PropTypes.string.isRequired
-    },
+    }
+    
+    constructor(props, context) {
+        super(props, context);
+    }
 
-    handleRequestClose: function () {
+    handleRequestClose() {
         this.props.requestClose();
-    },
+    }
 
-    render: function () {
+    render() {
         return (
             <div>
                 <Snackbar
@@ -27,7 +32,7 @@ var Notice = React.createClass({
             </div>
         );
     }
-});
+};
 
 function mapStateToProps (state) {
     return { 

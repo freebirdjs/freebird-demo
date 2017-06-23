@@ -1,7 +1,7 @@
 var express = require('express'),
     path = require('path');
 
-var shepherdApp = require('./app/server'),
+var freebirdApp = require('./app/server'),
     isDeveloping = process.env.NODE_ENV !== 'production',
     port = 3000,        // isDeveloping ? 3000 : process.env.PORT
     app = express();
@@ -43,5 +43,5 @@ app.listen(port, '0.0.0.0', function onStart(err) {
   console.info('==> Listening on port %s.', port);
   console.info('==> Open up http://0.0.0.0:%s/ in your browser.', port);
 
-  shepherdApp();
+  // freebirdApp();
 });

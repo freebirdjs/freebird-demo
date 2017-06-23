@@ -1,17 +1,24 @@
-import React, {PropTypes} from 'react';
+import React from 'react';
+import PropTypes from 'prop-types';
 import {connect} from 'react-redux';
 
 import {getWeather} from '../../redux/modules/weather';
 import WeatherIcon from '../Icons/WeatherIcon';
 
-const WeatherCard = React.createClass({
-    propTypes: {
+class WeatherCard extends React.Component {
+    static propTypes = {
         getWeather: PropTypes.func.isRequired
-    },
-    componentDidMount: function () {
+    }
+
+    constructor(props, context) {
+        super(props, context);
+    }
+
+    componentDidMount() {
         this.props.getWeather('25.071988', '121.578406');
-    },
-    render: function () {
+    }
+
+    render() {
         let weatherMain;
 
         if (this.props.weather.weather[0].main === 'Thunderstorm')
@@ -61,7 +68,7 @@ const WeatherCard = React.createClass({
             </div>
         );
     }
-});
+};
 
 function mapStateToProps (state) {
     return { 

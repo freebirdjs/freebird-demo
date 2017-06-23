@@ -11,7 +11,7 @@ var Freebird = require('freebird'),
 var fbRpc = require('freebird-rpc'),
     http = require('http'),
     rpcServer = fbRpc.createServer(
-        http.createServer().listen(3000)
+        http.createServer().listen(3030)
     );
 
 var freebird = new Freebird([ bleCore/*, mqttCore, coapCore, zigbeeCore*/ ]);

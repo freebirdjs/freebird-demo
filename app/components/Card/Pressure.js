@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 
 var fgColor = "#FFF",
     bgColor = "#F5D76E",
