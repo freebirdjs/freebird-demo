@@ -5,8 +5,12 @@ var chalk = require('chalk'),
 var Freebird = require('freebird'),
     bleCore = require('freebird-netcore-ble')('noble'),
     mqttCore = require('freebird-netcore-mqtt')(),
-    coapCore = require('freebird-netcore-coap')()/*,
-    zigbeeCore = require('freebird-netcore-zigbee')('dev/ttyACM0')*/;
+    coapCore = require('freebird-netcore-coap')(),
+    zigbeeCore = require('freebird-netcore-zigbee')('/dev/ttyACM0', {
+        net: {
+            panId: 0x7C71
+        }
+    });
 
 var fbRpc = require('freebird-rpc'),
     http = require('http'),
@@ -14,7 +18,7 @@ var fbRpc = require('freebird-rpc'),
         http.createServer().listen(3030)
     );
 
-var freebird = new Freebird([ bleCore/*, mqttCore, coapCore, zigbeeCore*/ ]);
+var freebird = new Freebird([ /*bleCore, mqttCore, coapCore, */zigbeeCore ]);
 
 var discover = new Discovery();
 
@@ -59,7 +63,7 @@ var app = function () {
         discover.announce(name, serv, interval, available);
 
         // Allow remote machines to join the network within 180 secs
-        freebird.permitJoin(180);
+        //freebird.permitJoin(180);
     });
 
     freebird.on('ready', function () {
@@ -68,6 +72,7 @@ var app = function () {
     });
 
     freebird.on('devIncoming', function (dev) {
+        console.log('devIncoming');
         console.log(dev);
         // ...
     });
@@ -77,7 +82,52 @@ var app = function () {
     });
 
     freebird.on('devNetChanged', function (msg) {
+        console.log('devNetChanged');
         console.log(msg);
+
+        var dev = freebird.findByNet('device', msg.ncName, msg.permAddr),
+            gads = [];
+
+        if (dev.dump().net.status !== 'online') return;
+
+        setTimeout(function () {
+            dev.dump().gads.forEach(function (gadInfo) {
+                var gad = freebird.findByNet('gadget', msg.ncName, msg.permAddr, gadInfo.auxId);
+
+                if (gad)
+                    gads.push(gad);
+            });
+
+            gads.forEach(function (gad) {
+                var gadInfo = gad.dump(),
+                    gadType = gadInfo.panel.classId;
+
+                switch (gadType) {
+                    case 'temperature':
+                        gad.writeReportCfg('sensorValue', { enable: true }, function () {});
+                        break;
+                    case 'humidity':
+                        gad.writeReportCfg('sensorValue', { enable: true }, function () {});
+                        break;
+                    case 'illuminance':
+                        gad.writeReportCfg('sensorValue', { enable: true }, function () {});
+                        break;
+                    case 'flame':
+                        break;
+                    case 'presence':
+                        gad.writeReportCfg('dInState', { enable: true }, function () {});
+                        break;
+                    case 'buzzer':
+                        break;
+                    case 'lightCtrl':
+                        break;
+                    case 'pwrCtrl':
+                        break;
+                    default:
+                        break;
+                }
+            });
+        }, 300);            
     });
 
 /**********************************/
@@ -184,6 +234,6 @@ function setLeaveMsg() {
 
 // }
 
-app();
+// app();
 
-//module.exports = app;
+module.exports = app;

@@ -8,13 +8,15 @@ import {
   TableRow,
   TableRowColumn,
 } from 'material-ui/Table';
+import _ from 'busyman';
 
 const DeviceList = ({ devs, height }) => {
     let listItems = Object.keys(devs).map(function (id) {
-        let devInfo = devs(id),
+        let devInfo = devs[id],
             subnetName = _.split(devInfo.netcore, '-');
 
         subnetName = subnetName[subnetName.length - 1];
+        
         return (
           <TableRow key={devInfo.id} selected={false}>
             <TableRowColumn>{devInfo.id}</TableRowColumn>
@@ -22,8 +24,8 @@ const DeviceList = ({ devs, height }) => {
             <TableRowColumn>{devInfo.net.address.permanent}</TableRowColumn>
             <TableRowColumn>{devInfo.net.address.dynamic}</TableRowColumn>
             <TableRowColumn>{devInfo.net.status}</TableRowColumn>
-            <TableRowColumn>{new Date(devInfo.net.timestamp)}</TableRowColumn>
-            <TableRowColumn>{new Date(devInfo.net.joinTime)}</TableRowColumn>
+            <TableRowColumn>{new Date(devInfo.net.timestamp).toString()}</TableRowColumn>
+            <TableRowColumn>{new Date(devInfo.net.joinTime).toString()}</TableRowColumn>
             <TableRowColumn>{devInfo.attrs.manufacturer}</TableRowColumn>
           </TableRow>
         );
@@ -60,7 +62,7 @@ const DeviceList = ({ devs, height }) => {
           </TableRow>
         </TableHeader>
 
-        <TableBody>
+        <TableBody displayRowCheckbox={false}>
           {listItems}
         </TableBody>
       </Table>

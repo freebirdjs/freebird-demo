@@ -7,7 +7,7 @@ import { WidthProvider } from 'react-grid-layout';
 import { getDevs, getGads, write } from '../../redux/modules/cardBlock';
 
 import { Light, Buzzer, Flame, Pir, Switch, Temperature, 
-        Humidity, Illuminance , Weather } from '../Card/Card';
+        Humidity, Illuminance, Pressure, Weather } from '../Card/Card';
 
 import DeviceList from '../DeviceList/DeviceList';
 import GadgetList from '../GadgetList/GadgetList';
@@ -40,11 +40,11 @@ class CardBlock extends React.Component {
         };
 
         switch (type) {
-            case 'Light':
-            case 'Buzzer':
-            case 'Flame':
-            case 'Pir':
-            case 'Switch':
+            case 'lightCtrl':
+            case 'buzzer':
+            case 'flame':
+            case 'presence':
+            case 'pwrCtrl':
                 cardProps.key = 'smallCard' + keyCounter.small;
                 keyCounter.small += 1;
 
@@ -54,9 +54,9 @@ class CardBlock extends React.Component {
                     cardProps.dataGrid = {x: Math.floor(Math.random() * 5) + 3, y: 4, w: 1, h: 2};
                 break;
 
-            case 'Temperature':
-            case 'Humidity':
-            case 'Illuminance':
+            case 'temperature':
+            case 'humidity':
+            case 'illuminance':
                 cardProps.key = 'bigCard' + keyCounter.big;
                 keyCounter.big += 1;
 
@@ -93,43 +93,49 @@ class CardBlock extends React.Component {
         }
 
         switch (type) {
-            case 'Light':
+            case 'lightCtrl':
                 value = attrs.onOff;
                 attrName = 'onOff';
                 card = (<Light enable={enable} onOff={value} onClick={this.onClickCallback(id, attrName, value)} />);
                 break;
-            case 'Buzzer':
+            case 'buzzer':
                 value = attrs.onOff;
                 attrName = 'onOff';
                 card = (<Buzzer enable={enable} onOff={value} onClick={this.onClickCallback(id, attrName, value)} />);
                 break;
-            case 'Flame':
+            case 'flame':
                 value = attrs.dInState;
                 card = (<Flame enable={enable} triggered={value} />);
                 break;
-            case 'Pir':
+            case 'presence':
                 value = attrs.dInState;
                 card = (<Pir enable={enable} triggered={value} />);
                 break;
-            case 'Switch':
-                value = attrs.dInState;
+            case 'pwrCtrl':
+                value = attrs.onOff;
                 card = (<Switch enable={enable} onOff={value} />);
                 break;
-            case 'Temperature':
-                value = attrs.sensorValue;
+            case 'temperature':
+                value = attrs.sensorValue.toFixed(1);
                 card = (<Temperature enable={enable} temp={value} />);
                 break;
-            case 'Humidity':
-                value = attrs.sensorValue;
+            case 'humidity':
+                value = attrs.sensorValue.toFixed(1);
                 card = (<Humidity enable={enable} humid={value} />);
                 break;
-            case 'Illuminance':
+            case 'illuminance':
                 value = attrs.sensorValue;
                 card = (<Illuminance enable={enable} lux={value} />);
+                break;
+            case 'pressure':
+                value = attrs.sensorValue;
+                card = (<Pressure enable={enable} pValue={value} />);
                 break;
             default:
                 break;
         }
+
+        if (!card) return;
 
         return (
             <div key={cardProps.key} data-grid={cardProps.dataGrid}>
@@ -158,7 +164,8 @@ class CardBlock extends React.Component {
 
     render() {
         var allGadRender = [],
-            rowHeight = this.getRowHeight();
+            rowHeight = this.getRowHeight(),
+            filteredGads = gadsFilter(this.props.gads);
 
         keyCounter = {
             small: 0,
@@ -180,14 +187,15 @@ class CardBlock extends React.Component {
             ]
         };
 
-        for (var id in this.props.gads) {
-            var devId = this.props.gads[id].dev.id,
-                type = this.props.gads[id].panel.classId,
+        for (var id in filteredGads) {
+            var devId = filteredGads[id].dev.id,
+                type = filteredGads[id].panel.classId,
                 status = this.props.devs[devId].net.status,
-                attrs = this.props.gads[id].attrs,
+                attrs = filteredGads[id].attrs,
                 card = this.getCard(type, status, id, attrs);
 
-            allGadRender.push(card);
+            if (card)
+                allGadRender.push(card);
         }
 
         allGadRender.push(
@@ -209,12 +217,32 @@ class CardBlock extends React.Component {
                 </div>
                 <br />
                 <div>
-                    <GadgetList gads={this.props.gads}/> 
+                    <GadgetList gads={filteredGads}/> 
                 </div>
             </div>
         );
     }
 };
+
+function gadsFilter(gads) {
+    var gadNames = ['lightCtrl', 'buzzer', 'flame', 'presence', 'pwrCtrl', 'temperature', 'humidity', 'illuminance', 'pressure'],
+        filteredGads = {},
+        classId;
+
+    for (var id in gads) {
+        console.log(gads[id]);
+        classId = gads[id].panel.classId;
+        if (gadNames.indexOf(classId) !== -1) {
+            if (classId !== 'illuminance') {
+                filteredGads[id] = gads[id];
+            } else if (classId === 'illuminance' && gads[id].attrs.id === 0) {
+                filteredGads[id] = gads[id];
+            }
+        }
+    }
+
+    return filteredGads;
+}
                     
 function mapStateToProps (state) {
     return { 
@@ -227,3 +255,4 @@ export default connect(
     mapStateToProps, 
     {getDevs, getGads, write}
 )(CardBlock)
+

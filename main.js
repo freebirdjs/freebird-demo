@@ -43,5 +43,5 @@ app.listen(port, '0.0.0.0', function onStart(err) {
   console.info('==> Listening on port %s.', port);
   console.info('==> Open up http://0.0.0.0:%s/ in your browser.', port);
 
-  // freebirdApp();
+  freebirdApp();
 });

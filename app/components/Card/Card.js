@@ -6,4 +6,5 @@ export Switch from './Switch';
 export Temperature from './Temperature';
 export Humidity from './Humidity';
 export Illuminance from './Illuminance';
+export Pressure from './Pressure';
 export Weather from './Weather';

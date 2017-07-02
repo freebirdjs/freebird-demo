@@ -32,7 +32,7 @@ const Switch = ({ enable, onOff, onClick }) => {
 
 Switch.propTypes = {
     enable: PropTypes.bool.isRequired,
-    onOff: PropTypes.bool.isRequired,
+    onOff: PropTypes.number.isRequired,
     onClick: PropTypes.func
 };
 

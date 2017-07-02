@@ -32,7 +32,7 @@ const Light = ({ enable, onOff, onClick }) => {
 
 Light.propTypes = {
     enable: PropTypes.bool.isRequired,
-    onOff: PropTypes.bool.isRequired,
+    onOff: PropTypes.number.isRequired,
     onClick: PropTypes.func.isRequired
 };
 

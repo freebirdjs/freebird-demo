@@ -8,11 +8,22 @@ import {
   TableRow,
   TableRowColumn,
 } from 'material-ui/Table';
+import _ from 'busyman';
 
 const GadgetList = ({ gads, height }) => {
     let listItems = Object.keys(gads).map(function (id) {
-        let gadInfo = gads(id),
-            subnetName = _.split(gadInfo.netcore, '-');
+        let gadInfo = gads[id],
+            subnetName = _.split(gadInfo.netcore, '-'),
+            gadValue;
+
+        if (!_.isNil(gadInfo.attrs.sensorValue))
+          gadValue = gadInfo.attrs.sensorValue;
+        else if (!_.isNil(gadInfo.attrs.dInState))
+          gadValue = gadInfo.attrs.dInState.toString();
+        else if (!_.isNil(gadInfo.attrs.onOff))
+          gadValue = gadInfo.attrs.onOff.toString();
+        else 
+          gadValue = '';
 
         subnetName = subnetName[subnetName.length - 1];
         return (
@@ -21,7 +32,7 @@ const GadgetList = ({ gads, height }) => {
             <TableRowColumn>{subnetName}</TableRowColumn>
             <TableRowColumn>{gadInfo.dev.permAddr}</TableRowColumn>
             <TableRowColumn>{gadInfo.panel.classId}</TableRowColumn>
-            <TableRowColumn>{gadInfo.attrs.sensorValue || gadInfo.attrs.dInState || gadInfo.attrs.onOff || ''}</TableRowColumn>
+            <TableRowColumn>{gadValue}</TableRowColumn>
           </TableRow>
         );
     });
@@ -54,7 +65,7 @@ const GadgetList = ({ gads, height }) => {
           </TableRow>
         </TableHeader>
 
-        <TableBody>
+        <TableBody displayRowCheckbox={false}>
           {listItems}
         </TableBody>
       </Table>

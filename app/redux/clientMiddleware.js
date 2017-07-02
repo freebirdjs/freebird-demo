@@ -13,70 +13,132 @@ const clientMiddleware = store => next => action => {
     switch (action.type) {
 // navBar
         case PERMITJOIN:
-            rpcClient.send('net', 'permitJoin', { duration: action.duration }, function (err, data) {
-                if (err) {
-                    console.log(err);
-                } else {
-                    next(action);    
-                } 
+            rpcConnectedDelay(function () {
+                rpcClient.send('net', 'permitJoin', { duration: action.duration }, function (err, data) {
+                    if (err) {
+                        console.log(err);
+                    } else {
+                        next(action);    
+                    } 
+                });
             });
+            // rpcClient.send('net', 'permitJoin', { duration: action.duration }, function (err, data) {
+            //     if (err) {
+            //         console.log(err);
+            //     } else {
+            //         next(action);    
+            //     } 
+            // });
             break;
 
 // cardBlork
         case GETDEVS:
-            rpcClient.send('net', 'getAllDevIds', {}, function (err, data) {
-                if (err) {
-                    console.log(err);
-                } else {
-                    rpcClient.send('net', 'getDevs', { ids: data.ids }, function (err, data) {  // { devs: [ {}, {}, {}... ]}
-                        var devs = {};
+            rpcConnectedDelay(function () {
+                rpcClient.send('net', 'getAllDevIds', {}, function (err, result) {
+                    if (err) {
+                        console.log(err);
+                    } else {
+                        rpcClient.send('net', 'getDevs', { ids: result.data.ids }, function (err, result) {  // { devs: [ {}, {}, {}... ]}
+                            var devs = {};
 
-                        _.forEach(data, function (dev) {
-                            devs[dev.id] = dev;
-                        });
+                            _.forEach(result.data.devs, function (dev) {
+                                devs[dev.id] = dev;
+                            });
 
-                        if (err) {
-                            console.log(err);
-                        } else {
-                            action.devs = devs;
-                            next(action);    
-                        } 
-                    });   
-                } 
+                            if (err) {
+                                console.log(err);
+                            } else {
+                                action.devs = devs;
+                                next(action);    
+                            } 
+                        });   
+                    } 
+                });
             });
+            // rpcClient.send('net', 'getAllDevIds', {}, function (err, data) {
+            //     if (err) {
+            //         console.log(err);
+            //     } else {
+            //         rpcClient.send('net', 'getDevs', { ids: data.ids }, function (err, data) {  // { devs: [ {}, {}, {}... ]}
+            //             var devs = {};
+
+            //             _.forEach(data, function (dev) {
+            //                 devs[dev.id] = dev;
+            //             });
+
+            //             if (err) {
+            //                 console.log(err);
+            //             } else {
+            //                 action.devs = devs;
+            //                 next(action);    
+            //             } 
+            //         });   
+            //     } 
+            // });
             break;
 
         case GETGADS:
-            rpcClient.send('net', 'getAllGadIds', {}, function (err, data) {
-                if (err) {
-                    console.log(err);
-                } else {
-                    rpcClient.send('net', 'getGads', { ids: data.ids }, function (err, data) {  // { gads: [ {}, {}, {}... ]}
-                        var gads = {};
+            rpcConnectedDelay(function () {
+                rpcClient.send('net', 'getAllGadIds', {}, function (err, result) {
+                    if (err) {
+                        console.log(err);
+                    } else {
+                        rpcClient.send('net', 'getGads', { ids: result.data.ids }, function (err, result) {  // { gads: [ {}, {}, {}... ]}
+                            var gads = {};
 
-                        _.forEach(data, function (gad) {
-                            gads[gad.id] = gad;
-                        });
+                            _.forEach(result.data.gads, function (gad) {
+                                gads[gad.id] = gad;
+                            });
 
-                        if (err) {
-                            console.log(err);
-                        } else {
-                            action.gads = gads;
-                            next(action);    
-                        } 
-                    }); 
-                } 
+                            if (err) {
+                                console.log(err);
+                            } else {
+                                action.gads = gads;
+                                next(action);    
+                            } 
+                        }); 
+                    } 
+                });
             });
+            // rpcClient.send('net', 'getAllGadIds', {}, function (err, data) {
+            //     if (err) {
+            //         console.log(err);
+            //     } else {
+            //         rpcClient.send('net', 'getGads', { ids: data.ids }, function (err, data) {  // { gads: [ {}, {}, {}... ]}
+            //             var gads = {};
+
+            //             _.forEach(data, function (gad) {
+            //                 gads[gad.id] = gad;
+            //             });
+
+            //             if (err) {
+            //                 console.log(err);
+            //             } else {
+            //                 action.gads = gads;
+            //                 next(action);    
+            //             } 
+            //         }); 
+            //     } 
+            // });
             break;
 
         case WRITE:
-            rpcClient.send('gad', 'write', { id: action.id, attrName: action.attrName, value: action.value }, function (err, data) {
-                if (err) {
-                    console.log(err);
-                } else {
-                    next(action);    
-                } 
+            rpcConnectedDelay(function () {
+                rpcClient.send('gad', 'write', { id: action.id, attrName: action.attrName, value: action.value }, function (err, data) {
+                    if (err) {
+                        console.log(err);
+                    } else {
+                        next(action);    
+                    } 
+                });
             });
+            // rpcClient.send('gad', 'write', { id: action.id, attrName: action.attrName, value: action.value }, function (err, data) {
+            //     if (err) {
+            //         console.log(err);
+            //     } else {
+            //         next(action);    
+            //     } 
+            // });
             break;
 
 // weather
