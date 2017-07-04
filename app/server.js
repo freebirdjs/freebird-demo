@@ -3,14 +3,14 @@ var chalk = require('chalk'),
     Discovery = require('udp-discovery').Discovery;
 
 var Freebird = require('freebird'),
-    bleCore = require('freebird-netcore-ble')('noble'),
-    mqttCore = require('freebird-netcore-mqtt')(),
-    coapCore = require('freebird-netcore-coap')(),
-    zigbeeCore = require('freebird-netcore-zigbee')('/dev/ttyACM0', {
-        net: {
-            panId: 0x7C71
-        }
-    });
+    // bleCore = require('freebird-netcore-ble')('noble'),
+    // mqttCore = require('freebird-netcore-mqtt')(),
+    coapCore = require('freebird-netcore-coap')();
+    // zigbeeCore = require('freebird-netcore-zigbee')('/dev/ttyACM0', {
+    //     net: {
+    //         panId: 0x7C71
+    //     }
+    // });
 
 var fbRpc = require('freebird-rpc'),
     http = require('http'),
@@ -18,12 +18,12 @@ var fbRpc = require('freebird-rpc'),
         http.createServer().listen(3030)
     );
 
-var freebird = new Freebird([ /*bleCore, */mqttCore, coapCore/*, zigbeeCore*/ ]);
+var freebird = new Freebird([ /*bleCore, mqttCore,*/ coapCore /*, zigbeeCore*/ ]);
 
 var discover = new Discovery();
 
-var name = 'freebird-demo-ip-broadcast',
-    interval = 500,
+var name = 'freebird-ip-broadcast',
+    interval = 100,
     available = true,
     serv = {
         port: 80,
@@ -131,8 +131,9 @@ var app = function () {
                             gad.writeReportCfg('sensorValue', { enable: true }, function () {});
                         }
                         break;
-                    case 'flame':
-                        gadList[gadType] = gad;
+                    case 'dIn':
+                        gadList.flame = gad;
+                        gad.writeReportCfg('dInState', { enable: true }, function () {});
                         break;
                     case 'presence':
                         gadList[gadType] = gad;

@@ -42,7 +42,7 @@ class CardBlock extends React.Component {
         switch (type) {
             case 'lightCtrl':
             case 'buzzer':
-            case 'flame':
+            case 'dIn':
             case 'presence':
             case 'pwrCtrl':
                 cardProps.key = 'smallCard' + keyCounter.small;
@@ -103,7 +103,7 @@ class CardBlock extends React.Component {
                 attrName = 'onOff';
                 card = (<Buzzer enable={enable} onOff={value} onClick={this.onClickCallback(id, attrName, value)} />);
                 break;
-            case 'flame':
+            case 'dIn':
                 value = attrs.dInState;
                 card = (<Flame enable={enable} triggered={value} />);
                 break;
@@ -226,7 +226,7 @@ class CardBlock extends React.Component {
 };
 
 function gadsFilter(gads) {
-    var gadNames = ['lightCtrl', 'buzzer', 'flame', 'presence', 'pwrCtrl', 'temperature', 'humidity', 'illuminance', 'pressure'],
+    var gadNames = ['lightCtrl', 'buzzer', 'dIn', 'presence', 'pwrCtrl', 'temperature', 'humidity', 'illuminance', 'pressure'],
         filteredGads = {},
         classId;
 
@@ -234,16 +234,19 @@ function gadsFilter(gads) {
         console.log(gads[id]);
         classId = gads[id].panel.classId;
         if (gadNames.indexOf(classId) !== -1) {
-            if (classId !== 'illuminance' && classId !== 'pwrCtrl') {
+            if (classId !== 'illuminance' && classId !== 'pwrCtrl' && classId !== 'dIn') {
                 filteredGads[id] = gads[id];
             } else if (classId === 'illuminance' && gads[id].attrs.id === 0) {
                 filteredGads[id] = gads[id];
             } else if (classId === 'pwrCtrl' && gads[id].netcore === 'freebird-netcore-zigbee') {
                 filteredGads[id] = gads[id];
+            } else if (classId === 'dIn' && gads[id].attrs.appType === 'flameSensor') {
+                filteredGads[id] = gads[id];
             }
         }
     }
 
+    console.log(filteredGads);
     return filteredGads;
 }
                     
