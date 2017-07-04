@@ -68,8 +68,7 @@ module.exports = {
                 },
             }, {
                 test: /\.css$/,
-                use: [ 'style-loader', 'css-loader' ],
-                include: PATHS.style
+                use: [{ loader: 'style-loader' }, { loader: 'css-loader', options: { modules: true }}]
             }, {
                 test: /\.json?$/,
                 loader: 'json-loader'

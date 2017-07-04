@@ -4,6 +4,7 @@ import {connect} from 'react-redux';
 import AppBar from 'material-ui/AppBar';
 import FlatButton from 'material-ui/FlatButton';
 import LinearProgress from 'material-ui/LinearProgress';
+import SivannIcon from '../../static/sivann_logo.png';
 import {permitJoin, permitJoining} from '../../redux/modules/navBar';
 import _ from 'busyman';
 
@@ -22,6 +23,7 @@ class NavBar extends React.Component {
 
     render() {
         let permitTimeLeft = this.props.timeLeft;
+        let iconLeft = <img src={SivannIcon} style={{position: "absolute", top: "40%", bottom: "0", left: "10%", right: "0", height: "25%", margin: "0"}} />;
         let iconRight = (permitTimeLeft !== 0) ?
                     <LinearProgress style={{position: "absolute", top: "50%", bottom: "0", left: "85%", right: "0", margin: "0", width: '120px'}} color='#F2784B' mode="determinate" max={60} value={permitTimeLeft}/> : 
                     <FlatButton style={{position: "absolute", top: "10%", bottom: "0", left: "85%", right: "0", margin: "0", fontFamily: 'Lato'}} label="Permit join" onClick={this.onClickCallback()}/>;
@@ -30,7 +32,7 @@ class NavBar extends React.Component {
             <AppBar
                 title={this.props.title}
                 titleStyle={{fontFamily: 'Lato', fontWeight:'bold', textAlign: 'center'}}
-                iconElementLeft={<div/>}
+                iconElementLeft={iconLeft}
                 iconElementRight = {iconRight}
                 style={{backgroundColor: '#2C3E50'}}
             />

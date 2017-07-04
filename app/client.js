@@ -22,7 +22,7 @@ import rpcClient from './helpers/rpcClient';
 /* client app                                */
 /*********************************************/
 var store = createStore(reducer, applyMiddleware(clientMiddleware)),
-    title = 'freebird-demo';
+    title = 'Heterogeneous Machine Network Application';
 
 rpcClient.on('open', function () {
     // channel established
