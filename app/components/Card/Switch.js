@@ -24,7 +24,7 @@ const Switch = ({ enable, onOff, onClick }) => {
     let icon = reallyOn ? (<SwitchOnIcon fill={cardFgColor} />) : (<SwitchOffIcon fill={cardFgColor} />);
 
     return (
-        <div style={{width: '100%', height: '100%', backgroundColor: cardBgColor}}>
+        <div style={{width: '100%', height: '100%', backgroundColor: cardBgColor}} onClick={onClick}>
             {icon}
         </div>
     );

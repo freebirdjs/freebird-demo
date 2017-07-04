@@ -113,7 +113,8 @@ class CardBlock extends React.Component {
                 break;
             case 'pwrCtrl':
                 value = attrs.onOff;
-                card = (<Switch enable={enable} onOff={value} />);
+                attrName = 'onOff';
+                card = (<Switch enable={enable} onOff={value} onClick={this.onClickCallback(id, attrName, value)} />);
                 break;
             case 'temperature':
                 value = attrs.sensorValue.toFixed(1);
@@ -233,9 +234,11 @@ function gadsFilter(gads) {
         console.log(gads[id]);
         classId = gads[id].panel.classId;
         if (gadNames.indexOf(classId) !== -1) {
-            if (classId !== 'illuminance') {
+            if (classId !== 'illuminance' && classId !== 'pwrCtrl') {
                 filteredGads[id] = gads[id];
             } else if (classId === 'illuminance' && gads[id].attrs.id === 0) {
+                filteredGads[id] = gads[id];
+            } else if (classId === 'pwrCtrl' && gads[id].netcore === 'freebird-netcore-zigbee') {
                 filteredGads[id] = gads[id];
             }
         }

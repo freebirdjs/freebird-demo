@@ -16,14 +16,15 @@ const GadgetList = ({ gads, height }) => {
             subnetName = _.split(gadInfo.netcore, '-'),
             gadValue;
 
-        if (!_.isNil(gadInfo.attrs.sensorValue))
+        if (!_.isNil(gadInfo.attrs.sensorValue)) {
           gadValue = gadInfo.attrs.sensorValue;
-        else if (!_.isNil(gadInfo.attrs.dInState))
-          gadValue = gadInfo.attrs.dInState.toString();
-        else if (!_.isNil(gadInfo.attrs.onOff))
-          gadValue = gadInfo.attrs.onOff.toString();
-        else 
+        } else if (!_.isNil(gadInfo.attrs.dInState)) {
+          gadValue = (!!gadInfo.attrs.dInState).toString();
+        } else if (!_.isNil(gadInfo.attrs.onOff)) {
+          gadValue = (!!gadInfo.attrs.onOff).toString();
+        } else {
           gadValue = '';
+        }
 
         subnetName = subnetName[subnetName.length - 1];
         return (

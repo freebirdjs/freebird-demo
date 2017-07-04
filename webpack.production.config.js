@@ -43,12 +43,12 @@ module.exports = {
             minChunks: Infinity
         }),
         new ExtractTextPlugin('[name]-[hash].min.css'),
-        new webpack.optimize.UglifyJsPlugin({
-            compressor: {
-                warnings: false,
-                screw_ie8: true
-            }
-        }),
+        // new webpack.optimize.UglifyJsPlugin({
+        //     compressor: {
+        //         warnings: false,
+        //         screw_ie8: true
+        //     }
+        // }),
         new webpack.DefinePlugin({
             'global.GENTLY': false
         }),
@@ -82,6 +82,7 @@ module.exports = {
 
     node: {
         __dirname: true,
-        fs: 'empty'
+        fs: 'empty',
+        tls: 'empty'
     }
 };

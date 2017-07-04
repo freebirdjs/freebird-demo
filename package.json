@@ -13,7 +13,7 @@
     "freebird": "^0.1.9",
     "freebird-netcore-ble": "^0.1.5",
     "freebird-netcore-coap": "0.0.7",
-    "freebird-netcore-mqtt": "0.0.8",
+    "freebird-netcore-mqtt": "0.0.9",
     "freebird-netcore-zigbee": "0.0.3",
     "freebird-rpc": "^0.3.3",
     "nodemailer": "^4.0.1",

@@ -18,12 +18,12 @@ var fbRpc = require('freebird-rpc'),
         http.createServer().listen(3030)
     );
 
-var freebird = new Freebird([ /*bleCore, mqttCore, coapCore, */zigbeeCore ]);
+var freebird = new Freebird([ /*bleCore, */mqttCore, coapCore/*, zigbeeCore*/ ]);
 
 var discover = new Discovery();
 
-var name = 'freebird-ip-broadcast',
-    interval = 1000,
+var name = 'freebird-demo-ip-broadcast',
+    interval = 500,
     available = true,
     serv = {
         port: 80,
@@ -38,6 +38,18 @@ var transporter = nodemailer.createTransport({
         pass: '26583302'
     }
 });
+
+var gadList = {
+        temperature: null,
+        humidity: null,
+        illuminance: null,
+        flame: null,
+        presence: null,
+        buzzer: null,
+        lightCtrl: null,
+        pwrCtrl: null
+    },
+    lightCtrlTimeout;
 
 var app = function () {
 /**********************************/
@@ -57,14 +69,16 @@ var app = function () {
     });
 
     // start the server
-    freebird.start(function (err) {
-        console.log('Server started');
+    // setTimeout(function () {
+        freebird.start(function (err) {
+            console.log('Server started');
 
-        discover.announce(name, serv, interval, available);
+            discover.announce(name, serv, interval, available);
 
-        // Allow remote machines to join the network within 180 secs
-        //freebird.permitJoin(180);
-    });
+            // Allow remote machines to join the network within 180 secs
+            //freebird.permitJoin(180);
+        });
+    // }, 60000);
 
     freebird.on('ready', function () {
         // ...
@@ -104,24 +118,37 @@ var app = function () {
 
                 switch (gadType) {
                     case 'temperature':
+                        gadList[gadType] = gad;
                         gad.writeReportCfg('sensorValue', { enable: true }, function () {});
                         break;
                     case 'humidity':
+                        gadList[gadType] = gad;
                         gad.writeReportCfg('sensorValue', { enable: true }, function () {});
                         break;
                     case 'illuminance':
-                        gad.writeReportCfg('sensorValue', { enable: true }, function () {});
+                        if (msg.ncName === 'freebird-netcore-mqtt') {
+                            gadList[gadType] = gad;
+                            gad.writeReportCfg('sensorValue', { enable: true }, function () {});
+                        }
                         break;
                     case 'flame':
+                        gadList[gadType] = gad;
                         break;
                     case 'presence':
+                        gadList[gadType] = gad;
                         gad.writeReportCfg('dInState', { enable: true }, function () {});
                         break;
                     case 'buzzer':
+                        gadList[gadType] = gad;
                         break;
                     case 'lightCtrl':
+                        gadList[gadType] = gad;
                         break;
                     case 'pwrCtrl':
+                        if (msg.ncName === 'freebird-netcore-zigbee') {
+                            gadList[gadType] = gad;
+                            gad.writeReportCfg('onOff', { pmin: 60, pmax: 180, enable: true }, function () {});
+                        }
                         break;
                     default:
                         break;
@@ -130,36 +157,79 @@ var app = function () {
         }, 300);            
     });
 
+    freebird.on('gadAttrsChanged', function (msg) {
+        var presenceGadId = gadList.presence ? gadList.presence.dump().id : null,
+            tempGadId = gadList.temperature ? gadList.temperature.dump().id : null,
+            flameGadId = gadList.flame ? gadList.flame.dump().id : null,
+            illumGadId = gadList.illuminance ? gadList.illuminance.dump().id : null;
+
+        if (msg.id === presenceGadId) {    
+                // console.log(freebird.xx.xx);        
+            if (msg.data.dInState === true && gadList.lightCtrl && gadList.lightCtrl.isEnabled()) {
+                if (gadList.lightCtrl.dump().attrs.onOff) return;
+                gadList.lightCtrl.write('onOff', 1, function () {});
+                if (lightCtrlTimeout) {
+                    clearTimeout(lightCtrlTimeout);
+                    lightCtrlTimeout = null;
+                }
+                lightCtrlTimeout = setTimeout(function () {
+                    gadList.lightCtrl.write('onOff', 0, function () {});
+                    lightCtrlTimeout = null;
+                }, 5000);
+            }
+        } else if (msg.id === illumGadId) {
+            if (msg.data.sensorValue <= 40 && gadList.lightCtrl && gadList.lightCtrl.isEnabled()) {
+                gadList.lightCtrl.write('onOff', 1, function () {});
+            } else if (msg.data.sensorValue >= 40 && gadList.lightCtrl && gadList.lightCtrl.isEnabled()) {
+                gadList.lightCtrl.write('onOff', 0, function () {});
+            }
+        } else if (msg.id === tempGadId) {
+            if (msg.data.sensorValue >= 28 && gadList.pwrCtrl && gadList.pwrCtrl.isEnabled()) {
+                gadList.pwrCtrl.write('onOff', 1, function () {});
+            } else if (msg.data.sensorValue <= 27.5 && gadList.pwrCtrl && gadList.pwrCtrl.isEnabled()) {
+                gadList.pwrCtrl.write('onOff', 0, function () {});
+            }
+        } else if (msg.id === flameGadId) {
+
+        }
+    });
+
 /**********************************/
 /* start shepherd                 */
 /**********************************/
 // start your shepherd
 
 };
-
+//       ____               __    _          __
+//      / __/_______  ___  / /_  (_)________/ /
+//     / /_/ ___/ _ \/ _ \/ __ \/ / ___/ __  / 
+//    / __/ /  /  __/  __/ /_/ / / /  / /_/ /  
+//   /_/ /_/   \___/\___/_.___/_/_/   \__,_/  
 /**********************************/
 /* welcome function               */
 /**********************************/
 function showWelcomeMsg() {
-var blePart1 = chalk.blue('       ___   __    ____      ____ __ __ ____ ___   __ __ ____ ___   ___ '),
-    blePart2 = chalk.blue('      / _ ) / /   / __/____ / __// // // __// _ \\ / // // __// _ \\ / _ \\'),
-    blePart3 = chalk.blue('     / _  |/ /__ / _/ /___/_\\ \\ / _  // _/ / ___// _  // _/ / , _// // /'),
-    blePart4 = chalk.blue('    /____//____//___/     /___//_//_//___//_/   /_//_//___//_/|_|/____/ ');
+var fbPart1 = chalk.blue('         ____               __    _          __'),
+    fbPart2 = chalk.blue('        / __/_______  ___  / /_  (_)________/ /'),
+    fbPart3 = chalk.blue('       / /_/ ___/ _ \\/ _ \\/ __ \\/ / ___/ __  / '),
+    fbPart4 = chalk.blue('      / __/ /  /  __/  __/ /_/ / / /  / /_/ /  '),
+    fbPart5 = chalk.blue('     /_/ /_/   \\___/\\___/_.___/_/_/   \\__,_/  ');
 
     console.log('');
     console.log('');
-    console.log('Welcome to ble-shepherd webapp... ');
+    console.log('Welcome to freebird-demo webapp... ');
     console.log('');
-    console.log(blePart1);
-    console.log(blePart2);
-    console.log(blePart3);
-    console.log(blePart4);
-    console.log(chalk.gray('         A network server and manager for the BLE machine network'));
+    console.log(fbPart1);
+    console.log(fbPart2);
+    console.log(fbPart3);
+    console.log(fbPart4);
+    console.log(fbPart5);
+    console.log(chalk.gray('    A network server and manager for the heterogeneous machine network'));
     console.log('');
-    console.log('   >>> Author:     Hedy Wang (hedywings@gmail.com)');
-    console.log('   >>> Version:    ble-shepherd v1.0.0');
-    console.log('   >>> Document:   https://github.com/bluetoother/ble-shepherd');
-    console.log('   >>> Copyright (c) 2016 Hedy Wang, The MIT License (MIT)');
+    console.log('   >>> Protocols:  BLE, Zigbee, MQTT, CoAP, Modbus');
+    console.log('   >>> Version:    freebird v0.1.9');
+    console.log('   >>> Document:   https://github.com/freebirdjs/freebird/wiki');
+    console.log('   >>> Copyright (c) 2017, The MIT License (MIT)');
     console.log('');
     console.log('The server is up and running, press Ctrl+C to stop server.');
     console.log('');
@@ -180,9 +250,9 @@ function setLeaveMsg() {
         console.log(chalk.blue('    \\___/ \\___/\\___/\\_,_/     /_.__/\\_, / \\__/ '));
         console.log(chalk.blue('                                   /___/             '));
         console.log(' ');
-        console.log('    >>> This is a simple demonstration of how the shepherd works.');
+        console.log('    >>> This is a simple demonstration of how the freebird works.');
         console.log('    >>> Please visit the link to know more about this project:   ');
-        console.log('    >>>   ' + chalk.yellow('https://github.com/zigbeer/zigbee-shepherd'));
+        console.log('    >>>   ' + chalk.yellow('https://github.com/freebirdjs/freebird/wiki'));
         console.log(' ');
         process.exit();
     }
