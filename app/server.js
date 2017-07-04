@@ -25,7 +25,7 @@ var freebird = new Freebird([ /*bleCore, mqttCore,*/ coapCore /*, zigbeeCore*/ ]
 var discover = new Discovery();
 
 
-var name = 'freebird-ip-broadcast',
+var name = 'freebird-demo-ip-broadcast',
     interval = 100,
     available = true,
     serv = {
