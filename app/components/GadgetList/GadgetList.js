@@ -27,6 +27,10 @@ const GadgetList = ({ gads, height }) => {
         }
 
         subnetName = subnetName[subnetName.length - 1];
+
+        if (gadInfo.panel.classId === 'pressure')
+          subnetName = 'modbus';
+
         return (
           <TableRow key={gadInfo.id} selected={false}>
             <TableRowColumn>{gadInfo.id}</TableRowColumn>

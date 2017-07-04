@@ -17,6 +17,9 @@ const DeviceList = ({ devs, height }) => {
 
         subnetName = subnetName[subnetName.length - 1];
         
+        if (subnetName === 'coap' && devInfo.net.address.permanent.split('/')[1] === 'modbus-node-pressure') 
+          subnetName = 'modbus';
+
         return (
           <TableRow key={devInfo.id} selected={false}>
             <TableRowColumn>{devInfo.id}</TableRowColumn>

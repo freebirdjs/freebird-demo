@@ -57,6 +57,7 @@ class CardBlock extends React.Component {
             case 'temperature':
             case 'humidity':
             case 'illuminance':
+            case 'pressure':
                 cardProps.key = 'bigCard' + keyCounter.big;
                 keyCounter.big += 1;
 
@@ -184,7 +185,8 @@ class CardBlock extends React.Component {
             bigCard: [
                 {x: 2, y: 0, w: 2, h: 2},
                 {x: 2, y: 1, w: 2, h: 2},
-                {x: 2, y: 2, w: 2, h: 2}
+                {x: 2, y: 2, w: 2, h: 2},
+                {x: 2, y: 3, w: 2, h: 2}
             ]
         };
 

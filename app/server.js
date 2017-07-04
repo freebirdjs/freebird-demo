@@ -12,6 +12,8 @@ var Freebird = require('freebird'),
     //     }
     // });
 
+var mnode = require('../clients/modbus-node/mnode.js');
+
 var fbRpc = require('freebird-rpc'),
     http = require('http'),
     rpcServer = fbRpc.createServer(
@@ -21,6 +23,7 @@ var fbRpc = require('freebird-rpc'),
 var freebird = new Freebird([ /*bleCore, mqttCore,*/ coapCore /*, zigbeeCore*/ ]);
 
 var discover = new Discovery();
+
 
 var name = 'freebird-ip-broadcast',
     interval = 100,
@@ -130,6 +133,10 @@ var app = function () {
                             gadList[gadType] = gad;
                             gad.writeReportCfg('sensorValue', { enable: true }, function () {});
                         }
+                        break;
+                    case 'pressure':
+                        gadList[gadType] = gad;
+                        gad.writeReportCfg('sensorValue', { enable: true }, function () {});
                         break;
                     case 'dIn':
                         gadList.flame = gad;

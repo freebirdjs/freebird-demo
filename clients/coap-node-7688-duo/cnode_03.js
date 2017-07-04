@@ -17,7 +17,7 @@ so.init('buzzer', 0, {
     }
 });
 
-var coapNode = new CoapNode('mt7688_03', so),
+var coapNode = new CoapNode('coap-node-sivann-buzzer', so),
     board = new Board("/dev/ttyS0", function(err) {
         console.log(err);
         if (err) {
@@ -40,17 +40,22 @@ coapNode.on('registered', function () {
 function startRegister() {
     var discover = new Discovery();
 
-    var annLis = function(name, data, reason) {
+    function register() {
+        coapNode.register(ip, 5683, function (err, msg) {
+            console.log(msg);
+            if (msg.status !== '2.01') 
+                setTimeout(register, 5000);
+        });
+    }
+
+    function annLis(name, data, reason) {
         if (name === 'freebird-demo-ip-broadcast') {
             ip = data.addr;
             discover.sendEvent('done');
-
-            coapNode.register(ip, 5683, function (err, msg) {
-                console.log(msg);
-                discover.removeListener('available', annLis);
-            });
+            discover.removeListener('available', annLis);
+            register();
         }
-    };
+    }
 
     discover.on('available', annLis);
 }
