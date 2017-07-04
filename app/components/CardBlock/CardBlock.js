@@ -238,11 +238,11 @@ function gadsFilter(gads) {
         if (gadNames.indexOf(classId) !== -1) {
             if (classId !== 'illuminance' && classId !== 'pwrCtrl' && classId !== 'dIn') {
                 filteredGads[id] = gads[id];
-            } else if (classId === 'illuminance' && gads[id].attrs.id === 0) {
+            } else if (classId === 'illuminance' && gads[id].netcore === 'freebird-netcore-mqtt') {
                 filteredGads[id] = gads[id];
             } else if (classId === 'pwrCtrl' && gads[id].netcore === 'freebird-netcore-zigbee') {
                 filteredGads[id] = gads[id];
-            } else if (classId === 'dIn' && gads[id].attrs.appType === 'flameSensor') {
+            } else if (classId === 'dIn' && gads[id].netcore === 'freebird-netcore-coap') {
                 filteredGads[id] = gads[id];
             }
         }

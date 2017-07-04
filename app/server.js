@@ -1,16 +1,16 @@
 var chalk = require('chalk'),
-    nodemailer = require('nodemailer'),
+    //nodemailer = require('nodemailer'),
     Discovery = require('udp-discovery').Discovery;
 
 var Freebird = require('freebird'),
-    // bleCore = require('freebird-netcore-ble')('noble'),
-    // mqttCore = require('freebird-netcore-mqtt')(),
+    bleCore = require('freebird-netcore-ble')('cc-bnp', { path: '/dev/ttyACM1' }),
+    mqttCore = require('freebird-netcore-mqtt')(),
     coapCore = require('freebird-netcore-coap')();
-    // zigbeeCore = require('freebird-netcore-zigbee')('/dev/ttyACM0', {
-    //     net: {
-    //         panId: 0x7C71
-    //     }
-    // });
+    zigbeeCore = require('freebird-netcore-zigbee')('/dev/ttyACM0', {
+        net: {
+            panId: 0x7C71
+        }
+    });
 
 var mnode = require('../clients/modbus-node/mnode.js');
 
@@ -20,13 +20,13 @@ var fbRpc = require('freebird-rpc'),
         http.createServer().listen(3030)
     );
 
-var freebird = new Freebird([ /*bleCore, mqttCore,*/ coapCore /*, zigbeeCore*/ ]);
+var freebird = new Freebird([ bleCore, mqttCore, coapCore , zigbeeCore ]);
 
 var discover = new Discovery();
 
 
 var name = 'freebird-demo-ip-broadcast',
-    interval = 100,
+    interval = 500,
     available = true,
     serv = {
         port: 80,
@@ -34,13 +34,13 @@ var name = 'freebird-demo-ip-broadcast',
         addrFamily: 'IPv4'
     };
 
-var transporter = nodemailer.createTransport({
+/*var transporter = nodemailer.createTransport({
     service: 'Gmail',
     auth: {
         user: 'sivann.freebird@gmail.com', 
         pass: '26583302'
     }
-});
+});*/
 
 var gadList = {
         temperature: null,
@@ -72,7 +72,7 @@ var app = function () {
     });
 
     // start the server
-    // setTimeout(function () {
+    setTimeout(function () {
         freebird.start(function (err) {
             console.log('Server started');
 
@@ -81,7 +81,7 @@ var app = function () {
             // Allow remote machines to join the network within 180 secs
             //freebird.permitJoin(180);
         });
-    // }, 60000);
+    }, 60000);
 
     freebird.on('ready', function () {
         // ...
@@ -139,8 +139,10 @@ var app = function () {
                         gad.writeReportCfg('sensorValue', { enable: true }, function () {});
                         break;
                     case 'dIn':
-                        gadList.flame = gad;
-                        gad.writeReportCfg('dInState', { enable: true }, function () {});
+                        if (msg.ncName === 'freebird-netcore-coap') {
+                            gadList[gadType] = gad;
+                            gad.writeReportCfg('dInState', { enable: true }, function () {});
+                        }
                         break;
                     case 'presence':
                         gadList[gadType] = gad;
@@ -170,9 +172,8 @@ var app = function () {
             tempGadId = gadList.temperature ? gadList.temperature.dump().id : null,
             flameGadId = gadList.flame ? gadList.flame.dump().id : null,
             illumGadId = gadList.illuminance ? gadList.illuminance.dump().id : null;
-
-        if (msg.id === presenceGadId) {    
-                // console.log(freebird.xx.xx);        
+console.log(msg);
+        if (msg.id === presenceGadId) {         
             if (msg.data.dInState === true && gadList.lightCtrl && gadList.lightCtrl.isEnabled()) {
                 if (gadList.lightCtrl.dump().attrs.onOff) return;
                 gadList.lightCtrl.write('onOff', 1, function () {});
@@ -198,7 +199,11 @@ var app = function () {
                 gadList.pwrCtrl.write('onOff', 0, function () {});
             }
         } else if (msg.id === flameGadId) {
-
+            if (msg.data.dInState === true && gadList.buzzer && gadList.buzzer.isEnabled()) {
+                gadList.buzzer.write('onOff', true, function () {});
+            } else if (msg.data.dInState === false && gadList.buzzer && gadList.buzzer.isEnabled()) {
+                gadList.buzzer.write('onOff', false, function () {});
+            } 
         }
     });
 
@@ -208,20 +213,29 @@ var app = function () {
 // start your shepherd
 
 };
-//       ____               __    _          __
-//      / __/_______  ___  / /_  (_)________/ /
-//     / /_/ ___/ _ \/ _ \/ __ \/ / ___/ __  / 
-//    / __/ /  /  __/  __/ /_/ / / /  / /_/ /  
-//   /_/ /_/   \___/\___/_.___/_/_/   \__,_/  
+                     
 /**********************************/
 /* welcome function               */
 /**********************************/
 function showWelcomeMsg() {
-var fbPart1 = chalk.blue('         ____               __    _          __'),
-    fbPart2 = chalk.blue('        / __/_______  ___  / /_  (_)________/ /'),
-    fbPart3 = chalk.blue('       / /_/ ___/ _ \\/ _ \\/ __ \\/ / ___/ __  / '),
-    fbPart4 = chalk.blue('      / __/ /  /  __/  __/ /_/ / / /  / /_/ /  '),
-    fbPart5 = chalk.blue('     /_/ /_/   \\___/\\___/_.___/_/_/   \\__,_/  ');
+var fbPart1 = chalk.blue('      77                   freebird v0.1.9                   77 '),
+    fbPart2 = chalk.blue('       72927                                             75927  '),
+    fbPart3 = chalk.blue('          288888477                               774888882     '),
+    fbPart4 = chalk.blue('             7888888889277                 7710888888807        '),
+    fbPart5 = chalk.blue('                7088888888888427     7148888888888847           '),
+    fbPart6 = chalk.blue('                   70888880888888   88888808888847              '),
+    fbPart7 = chalk.blue('                      7088800409807880040888847                 '),
+    fbPart8 = chalk.blue('                         7088809488099088847                    '),
+    fbPart9 = chalk.blue('                            7480049490857                       '),
+    fbPart10 = chalk.blue('                               8088888     '),
+    fbPart11 = chalk.blue('                              888470888             '),
+    fbPart12 = chalk.blue('                            1887     7887         '),
+    fbPart13 = chalk.blue('                           77           27      '),
+    introPart1 = chalk.gray('A network server and'),
+    introPart2 = chalk.gray('manager for'),
+    introPart3 = chalk.gray('heterogeneous'),
+    introPart4 = chalk.gray('machine network');
+
 
     console.log('');
     console.log('');
@@ -232,7 +246,15 @@ var fbPart1 = chalk.blue('         ____               __    _          __'),
     console.log(fbPart3);
     console.log(fbPart4);
     console.log(fbPart5);
-    console.log(chalk.gray('    A network server and manager for the heterogeneous machine network'));
+    console.log(fbPart6);
+    console.log(fbPart7);
+    console.log(fbPart8);
+    console.log(fbPart9);
+    console.log(fbPart10 + introPart1);
+    console.log(fbPart11 + introPart2);
+    console.log(fbPart12 + introPart3);
+    console.log(fbPart13 + introPart4);
+    //console.log(chalk.gray('    A network server and manager for the heterogeneous machine network'));
     console.log('');
     console.log('   >>> Protocols:  BLE, Zigbee, MQTT, CoAP, Modbus');
     console.log('   >>> Version:    freebird v0.1.9');
@@ -267,51 +289,5 @@ function setLeaveMsg() {
 
     process.on('SIGINT', showLeaveMessage);
 }
-
-/**********************************/
-/* Indication funciton            */
-/**********************************/
-// function readyInd () {
-//     ioServer.sendInd('ready', {});
-//     console.log(chalk.green('[         ready ] '));
-// }
-
-// function permitJoiningInd (timeLeft) {
-//     ioServer.sendInd('permitJoining', { timeLeft: timeLeft });
-//     console.log(chalk.green('[ permitJoining ] ') + timeLeft + ' sec');
-// }
-
-// function errorInd (msg) {
-//     ioServer.sendInd('error', { msg: msg });
-//     console.log(chalk.red('[         error ] ') + msg);
-// }
-
-// function devIncomingInd (dev) {
-//      ioServer.sendInd('devIncoming', { dev: dev });
-//     console.log(chalk.yellow('[   devIncoming ] ') + '@' + dev.permAddr);
-// }
-
-// function devStatusInd (permAddr, status) {
-//     ioServer.sendInd('devStatus', { permAddr: permAddr, status: status });
-
-//     if (status === 'online')
-//         status = chalk.green(status);
-//     else 
-//         status = chalk.red(status);
-
-//     console.log(chalk.magenta('[     devStatus ] ') + '@' + permAddr + ', ' + status);
-// }
-
-// function attrsChangeInd (permAddr, gad) {
-//     ioServer.sendInd('attrsChange', { permAddr: permAddr, gad: gad });
-//     console.log(chalk.blue('[   attrsChange ] ') + '@' + permAddr + ', auxId: ' + gad.auxId + ', value: ' + gad.value);
-// }
-
-// function toastInd (msg) {
-//     ioServer.sendInd('toast', { msg: msg });
-
-// }
-
-// app();
 
 module.exports = app;
