@@ -16,6 +16,7 @@ export default function reducer(state = initialState, action) {
             if (action.notfound) 
                 return state;
 
+console.log('yyyyyyyyyyy');
             return {
                 ...state,
                 info: action.weather,

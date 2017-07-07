@@ -14,24 +14,13 @@ class WeatherCard extends React.Component {
         super(props, context);
     }
 
-    componentDidMount() {
-        this.props.getWeather('25.071988', '121.578406');
-    }
-
     render() {
-        let weatherMain;
-
-        if (this.props.weather.weather[0].main === 'Thunderstorm')
-            weatherMain = 'Lightning storm';
-        else
-            weatherMain = this.props.weather.weather[0].main;
-
-        let desc = weatherMain ? weatherMain : 'Loading...';
-        let name = this.props.city;
-        let temp = this.props.weather.main.temp ? this.props.weather.main.temp.toFixed(1) : undefined;
-        let weatherIcon = this.props.weather.weather[0].icon ? <WeatherIcon icon={this.props.weather.weather[0].icon} /> : undefined;
-        let tempMin = this.props.weather.main.temp_min ? this.props.weather.main.temp_min.toFixed(1) : undefined;
-        let tempMax = this.props.weather.main.temp_max ? this.props.weather.main.temp_max.toFixed(1) : undefined;
+        let desc = 'Cloudy';
+        let name = 'Taoyuan';
+        let temp = 30;
+        let weatherIcon = <WeatherIcon icon={'04d'} />;
+        let tempMin = 26;
+        let tempMax = 30;
 
         return (
             <div style={{width: '100%', height: '100%', backgroundColor: '#1F3A93'}}>
